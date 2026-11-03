@@ -6,9 +6,6 @@ DB_NAME = "/tmp/patients.db" if os.environ.get("VERCEL") else "patients.db"
 
 def get_connection():
     """SQLite database connection banata hai."""
-    # Agar Vercel par DB abhi initialize nahi hua to pehle init karein
-    if os.environ.get("VERCEL") and not os.path.exists(DB_NAME):
-        init_db()
     conn = sqlite3.connect(DB_NAME)
     conn.row_factory = sqlite3.Row  # Dict ki tarah access karne ke liye
     return conn

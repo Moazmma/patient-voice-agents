@@ -7,6 +7,7 @@ from fastapi.responses import JSONResponse, HTMLResponse
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 
+from fastapi.openapi.docs import get_swagger_ui_html
 from database import get_connection, init_db
 from models import PatientCreate, PatientUpdate
 
@@ -17,8 +18,18 @@ logger = logging.getLogger("patient_api")
 app = FastAPI(
     title="Voice AI Patient Registration API",
     description="REST API for Patient Registration Voice Agent",
-    version="1.0.0"
+    version="1.0.0",
+    docs_url=None
 )
+
+@app.get("/docs", include_in_schema=False)
+async def custom_swagger_ui_html():
+    return get_swagger_ui_html(
+        openapi_url=app.openapi_url,
+        title=app.title + " - Swagger UI",
+        swagger_js_url="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.11.0/swagger-ui-bundle.min.js",
+        swagger_css_url="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.11.0/swagger-ui.min.css",
+    )
 
 # CORS allow karein taake kahin se bhi call ho sakay
 app.add_middleware(
@@ -33,6 +44,12 @@ app.add_middleware(
 def on_startup():
     init_db()
     logger.info("Application started. Database initialized.")
+
+# Direct initialization for serverless runtimes (Vercel)
+try:
+    init_db()
+except Exception as e:
+    logger.error(f"Serverless DB init: {e}")
 
 # Custom Validation Error Handler (Consistent Envelope { "data": null, "error": ... })
 @app.exception_handler(RequestValidationError)
