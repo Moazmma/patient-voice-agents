@@ -42,14 +42,17 @@ app.add_middleware(
 
 @app.on_event("startup")
 def on_startup():
-    init_db()
-    logger.info("Application started. Database initialized.")
+    try:
+        init_db()
+        logger.info("Application started. Database initialized.")
+    except Exception as e:
+        logger.warning(f"Startup DB init warning: {e}")
 
 # Direct initialization for serverless runtimes (Vercel)
 try:
     init_db()
 except Exception as e:
-    logger.error(f"Serverless DB init: {e}")
+    logger.warning(f"Serverless DB init warning: {e}")
 
 # Custom Validation Error Handler (Consistent Envelope { "data": null, "error": ... })
 @app.exception_handler(RequestValidationError)
